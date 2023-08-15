@@ -1,12 +1,12 @@
 import { useState } from "react";
-import img_comp_paper from "./assets/images/comp_paper.png";
-import img_comp_rock from "./assets/images/comp_rock.png";
-import img_comp_scissors from "./assets/images/comp_scissors.png";
-import img_player_paper from "./assets/images/player_paper.png";
-import img_player_rock from "./assets/images/player_rock.png";
-import img_player_scissors from "./assets/images/player_scissors.png";
+import GameControl from "./components/GameControl";
+import ScoreDisplay from "./components/ScoreDisplay";
+import FinalScoreDisplay from "./components/FinalScoreDisplay";
+import ChoiceImages from "./components/ChoiceImages";
+import ChoiceButtons from "./components/ChoiceButtons";
 
 function App() {
+
   const options = ["rock", "paper", "scissors"];
 
   const [playerChoice, setPlayerChoice] = useState("rock");
@@ -46,7 +46,6 @@ function App() {
     setPlayerChoice(playerChoose);
     setCompChoice(compChoose);
     const winner = checkWinner(playerChoose, compChoose);
-    setResult(winner);
     setRoundWinner(winner)
   };
 
@@ -57,16 +56,17 @@ function App() {
   const resetGame = () => {
     setPlayerChoice("rock");
     setCompChoice("rock");
-    setResult("");
     setPlayerScore(0);
     setCompScore(0);
     setPlaying(true);
     setRoundWinner("");
+    setIsGameOver(false);
   };
 
   const handleEndGame = () => {
     setIsGameOver(true);
     setRoundWinner("");
+    setPlaying(false);
     
     if (playerScore > compScore) {
       setGameWinner("player");
@@ -77,89 +77,39 @@ function App() {
     }
   }
 
-  const renderedPlayerChoice = options.map((option) => {
-    return (
-      <button
-        key={option}
-        onClick={() => handleChoice(option)}
-        disabled={!playing}
-        className="py-2 rounded-xl bg-green-700 w-[150px] m-3 font-semibold text-2xl text-white"
-      >
-        {option}
-      </button>
-    );
-  })
-
   return (
-    <div className="bg-amber-100 w-full sm:h-screen">  
+    <div className="bg-sky-200 w-full h-screen">  
       <div className="flex flex-col justify-center items-center">
-        <h1 className="font-bold text-2xl sm:text-5xl py-10">Rock Paper Scissors</h1>
-        <section className="grid grid-cols-4 gap-2">
-          <button 
-            className={`w-[120px] py-2 ${isPaused ? "bg-yellow-400 text-black" : "bg-red-800"} rounded-xl font-semibold text-white`}
-            onClick={togglePause}
-          >{isPaused ? "Resume" : "Pause"}
-          </button>
-          <button
-            className="w-[120px] py-2 bg-black rounded-xl font-semibold text-white"
-            onClick={handleEndGame}
-          >End Game
-          </button>
-          <div></div>
-          <button 
-            className="w-[120px] py-2 bg-black rounded-xl font-semibold text-white"
-            onClick={resetGame}
-          >Reset
-          </button>          
+        <h1 className="sm:0 font-bold text-2xl sm:text-5xl py-5 sm:py-10">Rock Paper Scissors</h1>
+        <section className="absolute bottom-5 sm:top-24 sm:left-10">
+          <GameControl 
+            isPaused={isPaused}
+            togglePause={togglePause}
+            handleEndGame={() => handleEndGame(playerScore, compScore)}
+            resetGame={resetGame}
+            isGameOver={isGameOver}
+          />
         </section>
-        <section className="hidden max-w-[800px] sm:grid sm:grid-cols-4 gap-2 font-semibold pt-5">
-          <p>Computer's Score: {compScore}</p>
-          <div></div>
-          <div></div>
-          <p>Your Score: {playerScore}</p>
+        <section className="relative w-3/5">
+          {!isGameOver && (
+          <ScoreDisplay compScore={compScore} playerScore={playerScore} />)}
+  
+          <FinalScoreDisplay 
+            roundWinner={roundWinner}
+            isGameOver={isGameOver}
+            gameWinner={gameWinner}
+            playerScore={playerScore}
+            compScore={compScore}
+          />
+          
+          <ChoiceImages compChoice={compChoice} playerChoice={playerChoice}/>
         </section>
-        <p className="py-4">{roundWinner && roundWinner}</p>
-
-        {isGameOver && (
-        <div className="py-4">
-          <p>Total Computer's Score: {compScore}</p>
-          <p>Total Your Score: {playerScore}</p>
-          <p>
-            {gameWinner === "player"
-              ? "Congratulations! You won the game!"
-              : gameWinner === "computer"
-              ? "Computer wins the game."
-              : "It's a tie! The game ended in a draw."}
-          </p>
-        </div>
-      )}
-
-        <section className="max-w-[800px] grid sm:grid-cols-2 gap-8 py-4">
-            {/* computer choice */}
-            <img
-              src={
-                compChoice === "rock"
-                  ? img_comp_rock
-                  : compChoice === "paper"
-                  ? img_comp_paper
-                  : img_comp_scissors
-              }
-              alt="Computer's Choice"
-            />
-
-            {/* player choice */}  
-            <img
-              src={
-                playerChoice === "rock"
-                  ? img_player_rock
-                  : playerChoice === "paper"
-                  ? img_player_paper
-                  : img_player_scissors
-              }
-              alt="Player's Choice"
-            />     
-        </section>
-        <section className="py-4 flex flex-col sm:flex-row">{renderedPlayerChoice}</section>
+        
+        <ChoiceButtons 
+            options={options} 
+            handleChoice={handleChoice} 
+            playing={playing} 
+          />
       </div>  
     </div>
   );
